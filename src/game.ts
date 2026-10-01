@@ -1,6 +1,6 @@
 import * as readline from "node:readline";
 import process, { stdin as input, stdout as output } from "node:process";
-import { LemonadeStand, formatMoney, DayOrder } from "./lemonadeStand";
+import { LemonadeStand, formatMoney, DayOrder, Supplies, INGREDIENTS, LABELS } from "./lemonadeStand";
 
 const MAX_DAYS = 12;
 
@@ -20,21 +20,54 @@ async function ask(question: string): Promise<string> {
 async function askNumber(question: string): Promise<number> {
   while (true) {
     const answer = (await ask(question)).trim();
+    if (answer === "") return 0; 
     const value = Number(answer);
-    if (answer !== "" && Number.isInteger(value)) return value;
+    if (Number.isInteger(value)) return value;
     console.log("Please type a whole number.");
   }
 }
 
-// Simple text bar so you can see demand at a glance. Each # is 5 customers.
+
 function demandBar(demand: number): string {
   const blocks = Math.min(40, Math.ceil(demand / 5));
   return "#".repeat(blocks) + (demand > 200 ? "+" : "");
 }
 
+function showInventory(stand: LemonadeStand): void {
+  const inv = stand.currentInventory;
+  const prices = stand.currentPrices;
+  console.log("Supplies            Have   Price each");
+  for (const item of INGREDIENTS) {
+    console.log(`  ${LABELS[item].padEnd(17)} ${String(inv[item]).padStart(4)}   ${prices[item]} cents`);
+  }
+  console.log(`One glass uses 1 of each, so it costs ${stand.costPerGlass} cents to make.`);
+  console.log(`You can make ${stand.glassesPossible} glasses right now.`);
+}
+
+async function shop(stand: LemonadeStand): Promise<void> {
+  console.log("\n--- SUPPLY STORE --- (press Enter to buy none)");
+  while (true) {
+    const purchase: Supplies = { cups: 0, lemons: 0, sugar: 0, ice: 0 };
+    for (const item of INGREDIENTS) {
+      purchase[item] = await askNumber(`How many ${LABELS[item]} do you want to buy? `);
+    }
+
+    const error = stand.validatePurchase(purchase);
+    if (error) {
+      console.log(`\n${error} Try again.\n`);
+      continue;
+    }
+
+    stand.buySupplies(purchase);
+    console.log(`\nYou spent ${formatMoney(stand.costOf(purchase))}. Assets: ${formatMoney(stand.currentAssets)}`);
+    console.log(`You can now make ${stand.glassesPossible} glasses.\n`);
+    return;
+  }
+}
+
 async function getOrder(stand: LemonadeStand): Promise<DayOrder> {
   while (true) {
-    const glasses = await askNumber("How many glasses of lemonade do you wish to make? ");
+    const glasses = await askNumber(`How many glasses do you want to make (max ${stand.glassesPossible})? `);
     const signs = await askNumber(`How many advertising signs (${stand.costPerSign} cents each)? `);
     const pricePerGlass = await askNumber("What price (in cents) do you wish to charge? ");
 
@@ -50,7 +83,8 @@ async function main(): Promise<void> {
   console.log("         LEMONADE STAND");
   console.log("=================================\n");
   console.log("You run a lemonade stand for the summer.");
-  console.log("Make lemonade, buy signs, set a price, and try to make money.");
+  console.log("Buy cups, lemons, sugar and ice. Each glass needs one of each.");
+  console.log("Cups, lemons and sugar keep overnight, but leftover ice melts.");
   console.log(`You start with ${formatMoney(200)}.\n`);
 
   const stand = new LemonadeStand();
@@ -59,16 +93,17 @@ async function main(): Promise<void> {
     const weather = stand.startDay();
 
     if (stand.isBroke) {
-      console.log("You don't have enough money to make lemonade. Game over.");
+      console.log("You can't afford enough supplies to make lemonade. Game over.");
       break;
     }
 
     console.log("---------------------------------");
     console.log(`Day ${stand.currentDay}   Weather: ${weather}`);
     console.log(`Assets: ${formatMoney(stand.currentAssets)}`);
-    console.log(`Cost of lemonade is ${stand.costPerGlass} cents per glass.`);
     console.log("---------------------------------");
+    showInventory(stand);
 
+    await shop(stand);
     const order = await getOrder(stand);
     const result = stand.runDay(order);
 
@@ -82,6 +117,9 @@ async function main(): Promise<void> {
       console.log(`You ran out! ${result.missedSales} customers left without lemonade.`);
     } else if (result.glassesMade > result.glassesSold) {
       console.log(`${result.glassesMade - result.glassesSold} glasses went unsold.`);
+    }
+    if (result.iceMelted > 0) {
+      console.log(`${result.iceMelted} leftover ice cubes melted overnight.`);
     }
     console.log(`Income:        ${formatMoney(result.income)}`);
     console.log(`Expenses:      ${formatMoney(result.expenses)}`);
