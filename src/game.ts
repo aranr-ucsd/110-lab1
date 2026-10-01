@@ -26,6 +26,12 @@ async function askNumber(question: string): Promise<number> {
   }
 }
 
+// Simple text bar so you can see demand at a glance. Each # is 5 customers.
+function demandBar(demand: number): string {
+  const blocks = Math.min(40, Math.ceil(demand / 5));
+  return "#".repeat(blocks) + (demand > 200 ? "+" : "");
+}
+
 async function getOrder(stand: LemonadeStand): Promise<DayOrder> {
   while (true) {
     const glasses = await askNumber("How many glasses of lemonade do you wish to make? ");
@@ -70,7 +76,13 @@ async function main(): Promise<void> {
     if (result.weather === "THUNDERSTORMS") {
       console.log("A thunderstorm rolled in! Everyone went home.");
     }
+    console.log(`Demand:        ${result.demand} customers  ${demandBar(result.demand)}`);
     console.log(`Glasses sold:  ${result.glassesSold} of ${result.glassesMade}`);
+    if (result.missedSales > 0) {
+      console.log(`You ran out! ${result.missedSales} customers left without lemonade.`);
+    } else if (result.glassesMade > result.glassesSold) {
+      console.log(`${result.glassesMade - result.glassesSold} glasses went unsold.`);
+    }
     console.log(`Income:        ${formatMoney(result.income)}`);
     console.log(`Expenses:      ${formatMoney(result.expenses)}`);
     console.log(`Profit:        ${formatMoney(result.profit)}`);

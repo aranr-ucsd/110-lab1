@@ -1,3 +1,6 @@
+
+
+
 export type Weather = "SUNNY" | "HOT AND DRY" | "CLOUDY" | "THUNDERSTORMS";
 
 export interface DayOrder {
@@ -10,7 +13,9 @@ export interface DayResult {
   day: number;
   weather: Weather;
   glassesMade: number;
+  demand: number;       
   glassesSold: number;
+  missedSales: number;  
   signsBought: number;
   pricePerGlass: number;
   income: number;   
@@ -121,7 +126,9 @@ export class LemonadeStand {
       day: this.day,
       weather: this.weather,
       glassesMade: glasses,
+      demand,
       glassesSold,
+      missedSales: demand - glassesSold,
       signsBought: signs,
       pricePerGlass,
       income,
