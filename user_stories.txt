@@ -1,0 +1,9 @@
+As a user of this app, I want to be able to optimize the amount of money I can make from the lemonade stand and feel accomplished when I am done.
+
+I want to be able to manage my resources to make most money possible.
+
+I want to adapt to given environmental changes and change my strategy day-by-day.
+
+I want to be able to compete against other players.
+
+I want to feel like I can run out of resources and fail. 

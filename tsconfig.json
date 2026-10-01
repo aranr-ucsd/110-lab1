@@ -4,9 +4,6 @@
 		// Treat files as modules even if it doesn't use import/export
 		"moduleDetection": "force",
 
-		// Ignore module structure
-		"module": "Preserve",
-
 		// Allow JSON modules to be imported
 		"resolveJsonModule": true,
 
@@ -18,6 +15,11 @@
 
 		// Disallow features that require cross-file awareness
 		"isolatedModules": true,
+
+		"target": "ES2022",
+		"module": "nodenext",
+		"strict": true,
+		"types": ["node"]
 	},
 }
 
