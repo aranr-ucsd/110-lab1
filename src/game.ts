@@ -36,11 +36,12 @@ function demandBar(demand: number): string {
 function showInventory(stand: LemonadeStand): void {
   const inv = stand.currentInventory;
   const prices = stand.currentPrices;
-  console.log("Supplies            Have   Price each");
+  console.log("Supplies            Have   Per glass   Price each");
+  const recipe = stand.recipe;
   for (const item of INGREDIENTS) {
-    console.log(`  ${LABELS[item].padEnd(17)} ${String(inv[item]).padStart(4)}   ${prices[item]} cents`);
+    console.log(`  ${LABELS[item].padEnd(17)} ${String(inv[item]).padStart(4)}   ${String(recipe[item]).padStart(9)}   ${prices[item]} cents`);
   }
-  console.log(`One glass uses 1 of each, so it costs ${stand.costPerGlass} cents to make.`);
+  console.log(`One glass of lemonade costs ${stand.costPerGlass} cents in ingredients.`);
   console.log(`You can make ${stand.glassesPossible} glasses right now.`);
 }
 
@@ -83,11 +84,10 @@ async function main(): Promise<void> {
   console.log("         LEMONADE STAND");
   console.log("=================================\n");
   console.log("You run a lemonade stand for the summer.");
-  console.log("Buy cups, lemons, sugar and ice. Each glass needs one of each.");
+  console.log("Buy cups, lemons, sugar and ice. Each glass needs a set amount of each.");
   console.log("Cups, lemons and sugar keep overnight, but leftover ice melts.");
-  console.log(`You start with ${formatMoney(200)}.\n`);
-
   const stand = new LemonadeStand();
+  console.log(`You start with ${formatMoney(stand.currentAssets)}.\n`);
 
   while (stand.currentDay < MAX_DAYS) {
     const weather = stand.startDay();

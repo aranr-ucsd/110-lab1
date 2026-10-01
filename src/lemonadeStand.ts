@@ -1,7 +1,5 @@
 export type Weather = "SUNNY" | "HOT AND DRY" | "CLOUDY" | "THUNDERSTORMS";
-
 export type Ingredient = "cups" | "lemons" | "sugar" | "ice";
-
 export const INGREDIENTS: Ingredient[] = ["cups", "lemons", "sugar", "ice"];
 
 
@@ -38,14 +36,18 @@ export interface DayResult {
 }
 
 
-const RECIPE: Supplies = { cups: 1, lemons: 1, sugar: 1, ice: 1 };
+
+export const RECIPE: Supplies = { cups: 1, lemons: 2, sugar: 3, ice: 4 };
+
+
+const FAIR_PRICE = 30;
 
 function emptySupplies(): Supplies {
   return { cups: 0, lemons: 0, sugar: 0, ice: 0 };
 }
 
 export class LemonadeStand {
-  private assets = 200; 
+  private assets = 500; 
   private day = 0;
   private readonly signCost = 15;
   private weather: Weather = "SUNNY";
@@ -53,7 +55,7 @@ export class LemonadeStand {
   private spentToday = 0;
 
   
-  private prices: Supplies = { cups: 1, lemons: 2, sugar: 1, ice: 1 };
+  private prices: Supplies = { cups: 2, lemons: 2, sugar: 1, ice: 1 };
 
   constructor(private readonly name: string = "Stand 1") {}
 
@@ -80,6 +82,10 @@ export class LemonadeStand {
 
   get currentPrices(): Supplies {
     return { ...this.prices };
+  }
+
+  get recipe(): Supplies {
+    return { ...RECIPE };
   }
 
   
@@ -237,10 +243,10 @@ export class LemonadeStand {
     let base: number;
     if (price <= 0) {
       base = 54; 
-    } else if (price < 10) {
-      base = ((10 - price) / 10) * 0.8 * 30 + 30;
+    } else if (price < FAIR_PRICE) {
+      base = ((FAIR_PRICE - price) / FAIR_PRICE) * 0.8 * 30 + 30;
     } else {
-      base = (10 * 10 * 30) / (price * price);
+      base = (FAIR_PRICE * FAIR_PRICE * 30) / (price * price);
     }
 
     
